@@ -1,4 +1,5 @@
 import os
+from traceback import print_tb
 from dotenv import load_dotenv
 from solcx import compile_standard, install_solc
 import json
@@ -58,10 +59,22 @@ transaction = SimpleStorage.constructor().buildTransaction({"gasPrice": w3.eth.g
 
 signed_txn = w3.eth.account.sign_transaction(transaction, private_key = private_key)
 
-# SEND THIS SIGNED TRANSACTION
+# SEND THIS SIGNED TRANSACTIONd
 tx_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
 tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
 
 # WORKING WITH THE CONTRACT, YOU ALWAYS NEED
 # CONTRACT ADDRESS
-# CONTRACT API
+# CONTRACT ABI
+# Call -> Simulate making the call and getting a return value so without any state change
+# # Calling is just a simulation
+# Transact-> Actually make a state change
+simple_storage = w3.eth.contract(address=tx_receipt.contractAddress, abi=abi)
+print(simple_storage.functions.retrieve().call())
+
+store_transaction = simple_storage.functions.store(15).buildTransaction({"gasPrice": w3.eth.gas_price, "chainId": chain_id, "from": my_address, "nonce": nonce+1})
+
+signed_store_txn = w3.eth.account.signTransaction(store_transaction, private_key= private_key)
+sent_store_tx = w3.eth.send_raw_transaction(signed_store_txn.rawTransaction)
+tx_receipt = w3.eth.wait_for_transaction_receipt(sent_store_tx)
+
